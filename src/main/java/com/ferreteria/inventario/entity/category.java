@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @Table(name = "categories")
 @NoArgsConstructor
 @AllArgsConstructor
-public class category {
+public class category extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "description", nullable = false)
     private String description; 
 
 }
