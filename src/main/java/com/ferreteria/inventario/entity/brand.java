@@ -15,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class brand {
+public class brand extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
