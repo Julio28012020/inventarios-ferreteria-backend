@@ -2,6 +2,7 @@ package com.ferreteria.inventario.controller;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import com.ferreteria.inventario.service.ProductService;
 
 @RestController
 @RequestMapping("/products")
+@CrossOrigin (origins = "http://localhost:5173")
 public class ProductController {
 
     private final ProductService productService;
