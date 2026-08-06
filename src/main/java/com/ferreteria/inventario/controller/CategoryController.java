@@ -14,6 +14,7 @@ import java.util.List;
 @CrossOrigin()
 @RequiredArgsConstructor
 public class CategoryController {
+    
     private final CategoryService categoryService;
 
     // Obtener todas las categorías

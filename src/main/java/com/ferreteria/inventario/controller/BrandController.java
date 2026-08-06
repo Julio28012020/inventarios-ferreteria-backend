@@ -2,7 +2,7 @@ package com.ferreteria.inventario.controller;
 
 import com.ferreteria.inventario.entity.Brand;
 import com.ferreteria.inventario.service.BrandService;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +12,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/brands")
 @CrossOrigin
-@RequiredArgsConstructor
 public class BrandController {
+
     private final BrandService brandService;
+
+    public BrandController(BrandService brandService) {
+        this.brandService = brandService;
+    }
 
     @GetMapping
     public ResponseEntity<List<Brand>> findAll() {
