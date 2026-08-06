@@ -1,19 +1,14 @@
 package com.ferreteria.inventario.service;
 
-import com.ferreteria.inventario.entity.Category;
+import com.ferreteria.inventario.dto.request.CategoryRequestDTO;
+import com.ferreteria.inventario.dto.response.CategoryResponseDTO;
 
 import java.util.List;
 
 public interface CategoryService {
-
-    List<Category> findAll();
-
-    Category findById(Long id);
-
-    Category save(Category category);
-
-    Category update(Long id, Category category);
-
-    void delete(Long id);
-
+    List<CategoryResponseDTO> getAllCategories();
+    CategoryResponseDTO getCategoryById(Long id);
+    CategoryResponseDTO createCategory(CategoryRequestDTO requestDTO);
+    CategoryResponseDTO updateCategory(Long id, CategoryRequestDTO requestDTO);
+    void deleteCategory(Long id);
 }

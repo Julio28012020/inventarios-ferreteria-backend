@@ -1,8 +1,8 @@
 package com.ferreteria.inventario.controller;
 
-import com.ferreteria.inventario.entity.Category;
+import com.ferreteria.inventario.dto.request.CategoryRequestDTO;
+import com.ferreteria.inventario.dto.response.CategoryResponseDTO;
 import com.ferreteria.inventario.service.CategoryService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,46 +10,42 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("categories")
-@CrossOrigin()
-@RequiredArgsConstructor
+@RequestMapping("/api/categories")
 public class CategoryController {
-    
+
     private final CategoryService categoryService;
 
-    // Obtener todas las categorías
+    // Inyección por constructor
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
+
     @GetMapping
-    public ResponseEntity<List<Category>> findAll() {
-        return ResponseEntity.ok(categoryService.findAll());
+    public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
+        return ResponseEntity.ok(categoryService.getAllCategories()); // Retorna 200 OK
     }
 
-    // Obtener una categoría por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Category> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(categoryService.findById(id));
+    public ResponseEntity<CategoryResponseDTO> getCategoryById(@PathVariable Long id) {
+        return ResponseEntity.ok(categoryService.getCategoryById(id)); // Retorna 200 OK
     }
 
-    // Crear una nueva categoría
     @PostMapping
-    public ResponseEntity<Category> save(@RequestBody Category category) {
-        Category newCategory = categoryService.save(category);
-        return new ResponseEntity<>(newCategory, HttpStatus.CREATED);
+    public ResponseEntity<CategoryResponseDTO> createCategory(@RequestBody CategoryRequestDTO requestDTO) {
+        CategoryResponseDTO createdCategory = categoryService.createCategory(requestDTO);
+        // Retorna 201 CREATED cuando el recurso se crea exitosamente
+        return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
     }
 
-    // Actualizar una categoría
     @PutMapping("/{id}")
-    public ResponseEntity<Category> update(
-            @PathVariable Long id,
-            @RequestBody Category category) {
-
-        Category updatedCategory = categoryService.update(id, category);
-        return ResponseEntity.ok(updatedCategory);
+    public ResponseEntity<CategoryResponseDTO> updateCategory(@PathVariable Long id, @RequestBody CategoryRequestDTO requestDTO) {
+        return ResponseEntity.ok(categoryService.updateCategory(id, requestDTO)); // Retorna 200 OK
     }
 
-    // Eliminar una categoría
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        categoryService.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        // Retorna 204 NO CONTENT porque el recurso fue eliminado y no hay datos que devolver
+        return ResponseEntity.noContent().build(); 
     }
 }
