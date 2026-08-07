@@ -16,7 +16,7 @@ import com.ferreteria.inventario.entity.Product;
 import com.ferreteria.inventario.service.ProductService;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/products")
 @CrossOrigin (origins = "http://localhost:5173")
 public class ProductController {
 
@@ -33,13 +33,13 @@ public class ProductController {
     }
 
     // Obtener un producto por ID
-    @GetMapping("/{id}")
+    @GetMapping("/api/products/{id}")
     public Product getProductById(@PathVariable Long id) {
         return productService.findById(id);
     }
 
     // Crear un producto
-    @PostMapping
+    @PostMapping("/api/products")
     public Product createProduct(@RequestBody Product product) {
         return productService.saveProduct(product);
     }
