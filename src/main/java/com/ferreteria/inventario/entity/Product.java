@@ -7,6 +7,8 @@ import com.ferreteria.inventario.enums.UnitOfMeasure;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,8 +36,10 @@ public class Product extends BaseEntity {
     @Column (columnDefinition = "TEXT")
     private String description;
 
-    @Column (name = "brand_id", nullable = false)
-    private int brandId;
+    @ManyToOne
+    @JoinColumn(name = "brand_id", nullable = false)
+    private Brand brand;
+
 
     @Column (name = "image_url", length = 500)
     private String imageUrl;
