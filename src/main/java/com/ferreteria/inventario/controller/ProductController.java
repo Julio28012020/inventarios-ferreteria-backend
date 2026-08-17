@@ -12,12 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ferreteria.inventario.dto.request.ProductRequest;
 import com.ferreteria.inventario.entity.Product;
 import com.ferreteria.inventario.service.ProductService;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin ()
+@CrossOrigin()
 public class ProductController {
 
     private final ProductService productService;
@@ -40,14 +41,13 @@ public class ProductController {
 
     // Crear un producto
     @PostMapping("")
-    public Product createProduct(@RequestBody Product product) {
-        return productService.saveProduct(product);
+    public Product createProduct(@RequestBody ProductRequest request) {
+        return productService.saveProduct(request);
     }
 
-    // Actualizar un producto
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        return productService.updateProduct(id, product);
+    public Product updateProduct(@PathVariable Long id, @RequestBody ProductRequest request) {
+        return productService.updateProduct(id, request);
     }
 
     // Eliminar un producto

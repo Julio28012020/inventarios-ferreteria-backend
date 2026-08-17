@@ -4,16 +4,21 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.ferreteria.inventario.dto.request.ProductRequest;
+import com.ferreteria.inventario.entity.Brand;
 import com.ferreteria.inventario.entity.Product;
+import com.ferreteria.inventario.repository.BrandRepository;
 import com.ferreteria.inventario.repository.ProductRepository;
 
 @Service
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final BrandRepository brandRepository;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, BrandRepository brandRepository) {
         this.productRepository = productRepository;
+        this.brandRepository = brandRepository;
     }
 
     public List<Product> findAllProducts() {
@@ -24,37 +29,50 @@ public class ProductService {
         return productRepository.findById(id).orElse(null);
     }
 
-    public Product saveProduct(Product product) {
+    public Product saveProduct(ProductRequest request) {
 
-        // Validar que el código sea obligatorio
-        if (product.getCode() == null || product.getCode().isBlank()) {
+        if (request.getCode() == null || request.getCode().isBlank()) {
             throw new IllegalArgumentException("El código del producto es obligatorio.");
         }
 
-        // Validar que el código no esté repetido
-        if (productRepository.existsByCode(product.getCode())) {
+        if (productRepository.existsByCode(request.getCode())) {
             throw new IllegalArgumentException("Ya existe un producto con ese código.");
         }
 
-        // Validar que el nombre sea obligatorio
-        if (product.getName() == null || product.getName().isBlank()) {
+        if (request.getName() == null || request.getName().isBlank()) {
             throw new IllegalArgumentException("El nombre del producto es obligatorio.");
         }
 
-        // Validar que el precio de compra sea obligatorio
-        if (product.getPurchasePrice() == null) {
+        if (request.getPurchasePrice() == null) {
             throw new IllegalArgumentException("El precio de compra es obligatorio.");
         }
 
-        // Validar que el precio de venta sea obligatorio
-        if (product.getSalePrice() == null) {
+        if (request.getSalePrice() == null) {
             throw new IllegalArgumentException("El precio de venta es obligatorio.");
         }
+
+        if (request.getBrandId() == null) {
+            throw new IllegalArgumentException("La marca es obligatoria.");
+        }
+
+        Brand brand = brandRepository.findById(request.getBrandId())
+            .orElseThrow(() -> new IllegalArgumentException("La marca especificada no existe."));
+
+        Product product = new Product();
+        product.setCode(request.getCode());
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setBrand(brand);
+        product.setImageUrl(request.getImageUrl());
+        product.setPurchasePrice(request.getPurchasePrice());
+        product.setSalePrice(request.getSalePrice());
+        product.setCurrentStock(request.getCurrentStock());
+        product.setMinimumStock(request.getMinimumStock());
 
         return productRepository.save(product);
     }
 
-    public Product updateProduct(Long id, Product product) {
+    public Product updateProduct(Long id, ProductRequest request) {
 
         Product existingProduct = findById(id);
 
@@ -62,15 +80,21 @@ public class ProductService {
             throw new IllegalArgumentException("El producto no existe.");
         }
 
-        existingProduct.setCode(product.getCode());
-        existingProduct.setName(product.getName());
-        existingProduct.setDescription(product.getDescription());
-        existingProduct.setImageUrl(product.getImageUrl());
-        existingProduct.setPurchasePrice(product.getPurchasePrice());
-        existingProduct.setSalePrice(product.getSalePrice());
-        existingProduct.setCurrentStock(product.getCurrentStock());
-        existingProduct.setMinimumStock(product.getMinimumStock());
-        existingProduct.setStatus(product.getStatus());
+        existingProduct.setCode(request.getCode());
+        existingProduct.setName(request.getName());
+        existingProduct.setDescription(request.getDescription());
+        existingProduct.setImageUrl(request.getImageUrl());
+        existingProduct.setPurchasePrice(request.getPurchasePrice());
+        existingProduct.setSalePrice(request.getSalePrice());
+        existingProduct.setCurrentStock(request.getCurrentStock());
+        existingProduct.setMinimumStock(request.getMinimumStock());
+        existingProduct.setStatus(request.getStatus());
+
+        if (request.getBrandId() != null) {
+            Brand brand = brandRepository.findById(request.getBrandId())
+                .orElseThrow(() -> new IllegalArgumentException("La marca especificada no existe."));
+            existingProduct.setBrand(brand);
+        }
 
         return productRepository.save(existingProduct);
     }
