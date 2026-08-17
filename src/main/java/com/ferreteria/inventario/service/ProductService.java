@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.ferreteria.inventario.dto.request.ProductRequest;
 import com.ferreteria.inventario.entity.Brand;
 import com.ferreteria.inventario.entity.Product;
+import com.ferreteria.inventario.enums.ProductStatus;
 import com.ferreteria.inventario.repository.BrandRepository;
 import com.ferreteria.inventario.repository.ProductRepository;
 
@@ -22,11 +23,13 @@ public class ProductService {
     }
 
     public List<Product> findAllProducts() {
-        return productRepository.findAll();
+        return productRepository.findByStatusNot(ProductStatus.DISCONTINUED);
     }
 
     public Product findById(Long id) {
-        return productRepository.findById(id).orElse(null);
+        return productRepository
+                .findByIdAndStatusNot(id, ProductStatus.DISCONTINUED)
+                .orElse(null);
     }
 
     public Product saveProduct(ProductRequest request) {
@@ -56,9 +59,10 @@ public class ProductService {
         }
 
         Brand brand = brandRepository.findById(request.getBrandId())
-            .orElseThrow(() -> new IllegalArgumentException("La marca especificada no existe."));
+                .orElseThrow(() -> new IllegalArgumentException("La marca especificada no existe."));
 
         Product product = new Product();
+
         product.setCode(request.getCode());
         product.setName(request.getName());
         product.setDescription(request.getDescription());
@@ -68,6 +72,17 @@ public class ProductService {
         product.setSalePrice(request.getSalePrice());
         product.setCurrentStock(request.getCurrentStock());
         product.setMinimumStock(request.getMinimumStock());
+
+        if (request.getStatus() == ProductStatus.ACTIVE ||
+                request.getStatus() == ProductStatus.INACTIVE) {
+
+            product.setStatus(request.getStatus());
+
+        } else {
+            product.setStatus(ProductStatus.ACTIVE);
+        }
+
+        product.setUnitOfMeasure(request.getUnitOfMeasure());
 
         return productRepository.save(product);
     }
@@ -84,15 +99,18 @@ public class ProductService {
         existingProduct.setName(request.getName());
         existingProduct.setDescription(request.getDescription());
         existingProduct.setImageUrl(request.getImageUrl());
-        existingProduct.setPurchasePrice(request.getPurchasePrice());
         existingProduct.setSalePrice(request.getSalePrice());
-        existingProduct.setCurrentStock(request.getCurrentStock());
         existingProduct.setMinimumStock(request.getMinimumStock());
-        existingProduct.setStatus(request.getStatus());
+
+        if (request.getStatus() == ProductStatus.ACTIVE ||
+                request.getStatus() == ProductStatus.INACTIVE) {
+
+            existingProduct.setStatus(request.getStatus());
+        }
 
         if (request.getBrandId() != null) {
             Brand brand = brandRepository.findById(request.getBrandId())
-                .orElseThrow(() -> new IllegalArgumentException("La marca especificada no existe."));
+                    .orElseThrow(() -> new IllegalArgumentException("La marca especificada no existe."));
             existingProduct.setBrand(brand);
         }
 
@@ -100,6 +118,13 @@ public class ProductService {
     }
 
     public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "El producto no existe."));
+
+        product.setStatus(ProductStatus.DISCONTINUED);
+
+        productRepository.save(product);
     }
 }
