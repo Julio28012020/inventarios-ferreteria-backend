@@ -57,7 +57,9 @@ public class PurchaseServiceImpl implements PurchaseService {
         purchase.setSupplier(supplier);
         purchase.setProduct(product);
         copyData(dto, purchase);
-        addStock(product, dto.getQuantity());
+        
+        // MODIFICADO: Ahora actualizamos tanto el stock como el precio de compra actual del producto
+        addStockAndPricing(product, dto.getQuantity(), dto.getUnitPrice());
 
         return purchaseRepository.save(purchase);
     }
@@ -72,7 +74,9 @@ public class PurchaseServiceImpl implements PurchaseService {
         Product newProduct = findProduct(dto.getProductId());
 
         removeStock(oldProduct, purchase.getQuantity());
-        addStock(newProduct, dto.getQuantity());
+        
+        // MODIFICADO: Actualizamos stock y precio en el producto al modificar la compra
+        addStockAndPricing(newProduct, dto.getQuantity(), dto.getUnitPrice());
 
         purchase.setSupplier(findSupplier(dto.getSupplierId()));
         purchase.setProduct(newProduct);
@@ -123,11 +127,17 @@ public class PurchaseServiceImpl implements PurchaseService {
                 .orElseThrow(() -> new IllegalArgumentException("El producto no existe."));
     }
 
-    private void addStock(Product product, BigDecimal quantity) {
+    // NUEVO MÉTODO: Reemplaza al antiguo addStock para actualizar también el precio de compra actual
+    private void addStockAndPricing(Product product, BigDecimal quantity, BigDecimal unitPrice) {
+        // 1. Actualizar el precio de compra actual del producto
+        product.setPurchasePrice(unitPrice);
+
+        // 2. Sumar al stock actual (lógica original)
         BigDecimal currentStock = product.getCurrentStock() == null
                 ? BigDecimal.ZERO
                 : product.getCurrentStock();
         product.setCurrentStock(currentStock.add(quantity));
+        
         productRepository.save(product);
     }
 
