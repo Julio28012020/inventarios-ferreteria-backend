@@ -1,0 +1,12 @@
+package com.ferreteria.inventario.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.ferreteria.inventario.entity.SupplierContact;
+
+public interface SupplierContactRepository extends JpaRepository<SupplierContact, Long> {
+
+    List<SupplierContact> findBySupplierId(Long supplierId);
+}
