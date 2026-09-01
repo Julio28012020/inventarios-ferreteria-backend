@@ -2,18 +2,21 @@ package com.ferreteria.inventario.controller;
 
 import java.util.List;
 
-import com.ferreteria.inventario.dto.response.SaleResponse;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.ferreteria.inventario.dto.request.SaleRequest;
-import com.ferreteria.inventario.entity.Sale;
+import com.ferreteria.inventario.dto.response.SaleResponse;
 import com.ferreteria.inventario.service.SaleService;
 
 @RestController
-@RequestMapping("/sales")
+@RequestMapping("/api/sales")
 public class SaleController {
 
     private final SaleService saleService;
@@ -22,29 +25,34 @@ public class SaleController {
         this.saleService = saleService;
     }
 
+    // Crear una venta
     @PostMapping
-    public ResponseEntity<Sale> createSale(
+    public ResponseEntity<SaleResponse> createSale(
             @RequestBody SaleRequest request) {
 
-        Sale sale = saleService.createSale(request);
+        SaleResponse response = saleService.createSale(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(sale);
+                .body(response);
     }
 
+    // Obtener todas las ventas
     @GetMapping
-    public ResponseEntity<List<Sale>> getAllSales() {
+    public ResponseEntity<List<SaleResponse>> getAllSales() {
 
-        return ResponseEntity.ok(
-                saleService.findAllSales());
+        List<SaleResponse> sales = saleService.findAllSales();
+
+        return ResponseEntity.ok(sales);
     }
 
+    // Obtener una venta por ID
     @GetMapping("/{id}")
     public ResponseEntity<SaleResponse> getSaleById(
             @PathVariable Long id) {
 
-        return ResponseEntity.ok(
-                saleService.findSaleById(id));
+        SaleResponse response = saleService.findSaleById(id);
+
+        return ResponseEntity.ok(response);
     }
 }

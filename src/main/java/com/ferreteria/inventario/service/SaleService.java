@@ -35,9 +35,13 @@ public class SaleService {
         this.productRepository = productRepository;
     }
 
-    // Crear venta
+    // Crear una venta
     @Transactional
-    public Sale createSale(SaleRequest request) {
+    public SaleResponse createSale(SaleRequest request) {
+
+        if (request == null) {
+            throw new IllegalArgumentException("La información de la venta es obligatoria.");
+        }
 
         if (request.getPaymentMethod() == null) {
             throw new IllegalArgumentException(
@@ -54,8 +58,8 @@ public class SaleService {
         Sale sale = new Sale();
 
         sale.setPaymentMethod(request.getPaymentMethod());
-        sale.setTotal(BigDecimal.ZERO);
         sale.setStatus(SaleStatus.PENDING);
+        sale.setTotal(BigDecimal.ZERO);
 
         Sale savedSale = saleRepository.save(sale);
 
@@ -63,14 +67,16 @@ public class SaleService {
 
         for (SaleDetailRequest detailRequest : request.getDetails()) {
 
-            // Validar producto
-            if (detailRequest.getProductId() == null) {
+            if (detailRequest == null) {
+                throw new IllegalArgumentException(
+                        "Existe un detalle de venta inválido.");
+            }
 
+            if (detailRequest.getProductId() == null) {
                 throw new IllegalArgumentException(
                         "El producto es obligatorio.");
             }
 
-            // Validar cantidad
             if (detailRequest.getQuantity() == null ||
                     detailRequest.getQuantity()
                             .compareTo(BigDecimal.ZERO) <= 0) {
@@ -79,29 +85,43 @@ public class SaleService {
                         "La cantidad debe ser mayor que cero.");
             }
 
-            // Buscar producto
             Product product = productRepository
                     .findById(detailRequest.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException(
-                            "El producto no existe."));
+                            "El producto con ID "
+                                    + detailRequest.getProductId()
+                                    + " no existe."));
 
-            // Validar stock
+            if (product.getSalePrice() == null) {
+                throw new IllegalArgumentException(
+                        "El producto "
+                                + product.getName()
+                                + " no tiene precio de venta.");
+            }
+
+            if (product.getCurrentStock() == null) {
+                throw new IllegalArgumentException(
+                        "El producto "
+                                + product.getName()
+                                + " no tiene stock configurado.");
+            }
+
             if (product.getCurrentStock()
                     .compareTo(detailRequest.getQuantity()) < 0) {
 
                 throw new IllegalArgumentException(
                         "No hay suficiente stock para el producto: "
-                                + product.getName());
+                                + product.getName()
+                                + ". Stock disponible: "
+                                + product.getCurrentStock()
+                                + ".");
             }
 
-            // Precio actual del producto
             BigDecimal unitPrice = product.getSalePrice();
 
-            // Calcular subtotal
             BigDecimal subtotal = unitPrice.multiply(
                     detailRequest.getQuantity());
 
-            // Crear detalle
             SaleDetail saleDetail = new SaleDetail();
 
             saleDetail.setSale(savedSale);
@@ -112,56 +132,75 @@ public class SaleService {
 
             saleDetailRepository.save(saleDetail);
 
-            // Descontar inventario
-            product.setCurrentStock(
-                    product.getCurrentStock()
-                            .subtract(detailRequest.getQuantity()));
+            BigDecimal newStock = product.getCurrentStock()
+                    .subtract(detailRequest.getQuantity());
+
+            product.setCurrentStock(newStock);
 
             productRepository.save(product);
 
-            // Acumular total
             total = total.add(subtotal);
         }
 
-        // Marcar venta como completada
+        savedSale.setTotal(total);
         savedSale.setStatus(SaleStatus.COMPLETED);
 
-        // Guardar total
-        savedSale.setTotal(total);
+        Sale finalSale = saleRepository.save(savedSale);
 
-        return saleRepository.save(savedSale);
+        return convertToResponse(finalSale);
     }
 
     // Obtener todas las ventas
-public List<Sale> findAllSales() {
-    return saleRepository.findAll();
-}
+    @Transactional(readOnly = true)
+    public List<SaleResponse> findAllSales() {
 
-// Obtener una venta por ID
-public SaleResponse findSaleById(Long id) {
+        return saleRepository.findAll()
+                .stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
 
-    Sale sale = saleRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException(
-                    "La venta no existe."));
+    // Obtener una venta por ID
+    @Transactional(readOnly = true)
+    public SaleResponse findSaleById(Long id) {
 
-    List<SaleDetail> details = saleDetailRepository.findBySaleId(id);
+        if (id == null) {
+            throw new IllegalArgumentException(
+                    "El ID de la venta es obligatorio.");
+        }
 
-    List<SaleDetailResponse> detailResponses = details.stream()
-            .map(detail -> new SaleDetailResponse(
-                    detail.getProduct().getId(),
-                    detail.getProduct().getName(),
-                    detail.getProduct().getCode(),
-                    detail.getQuantity(),
-                    detail.getUnitPrice(),
-                    detail.getSubtotal()))
-            .toList();
+        Sale sale = saleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "La venta con ID " + id + " no existe."));
 
-    return new SaleResponse(
-            sale.getId(),
-            sale.getStatus(),
-            sale.getPaymentMethod(),
-            sale.getTotal(),
-            sale.getCreatedAt(),
-            detailResponses);
-}
+        return convertToResponse(sale);
+    }
+
+    // Convertir una entidad Sale a SaleResponse
+    private SaleResponse convertToResponse(Sale sale) {
+
+        List<SaleDetail> details =
+                saleDetailRepository.findBySaleId(sale.getId());
+
+        List<SaleDetailResponse> detailResponses = details
+                .stream()
+                .map(detail -> new SaleDetailResponse(
+                        detail.getProduct().getId(),
+                        detail.getProduct().getName(),
+                        detail.getProduct().getCode(),
+                        detail.getQuantity(),
+                        detail.getUnitPrice(),
+                        detail.getSubtotal()
+                ))
+                .toList();
+
+        return new SaleResponse(
+                sale.getId(),
+                sale.getStatus(),
+                sale.getPaymentMethod(),
+                sale.getTotal(),
+                sale.getCreatedAt(),
+                detailResponses
+        );
+    }
 }
