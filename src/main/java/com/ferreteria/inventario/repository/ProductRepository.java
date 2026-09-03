@@ -14,6 +14,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByStatusNot(ProductStatus status);
 
-    Optional<Product> findByIdAndStatusNot(Long id, ProductStatus status);
+    List<Product> findByStatus(ProductStatus status);
 
+    Optional<Product> findByIdAndStatusNot(Long id, ProductStatus status);
 }

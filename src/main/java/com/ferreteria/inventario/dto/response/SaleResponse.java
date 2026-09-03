@@ -28,5 +28,11 @@ public class SaleResponse {
 
     private LocalDateTime createdAt;
 
+    private Long customerId;
+
+    private String customerName;
+
+    private String customerDocumentNumber;
+
     private List<SaleDetailResponse> details;
 }

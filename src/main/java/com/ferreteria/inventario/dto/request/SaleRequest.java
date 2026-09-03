@@ -11,8 +11,9 @@ import lombok.Setter;
 @Setter
 public class SaleRequest {
 
+    private Long customerId;
+
     private PaymentMethod paymentMethod;
 
     private List<SaleDetailRequest> details;
-
 }
