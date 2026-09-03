@@ -27,10 +27,16 @@ public class ProductController {
         this.productService = productService;
     }
 
-    // Obtener todos los productos
+    // Obtener todos los productos para Inventario
     @GetMapping
     public List<Product> getAllProducts() {
         return productService.findAllProducts();
+    }
+
+    // Obtener solo productos activos para Ventas
+    @GetMapping("/active")
+    public List<Product> getActiveProducts() {
+        return productService.findActiveProducts();
     }
 
     // Obtener un producto por ID
@@ -45,8 +51,12 @@ public class ProductController {
         return productService.saveProduct(request);
     }
 
+    // Actualizar un producto
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @RequestBody ProductRequest request) {
+    public Product updateProduct(
+            @PathVariable Long id,
+            @RequestBody ProductRequest request) {
+
         return productService.updateProduct(id, request);
     }
 

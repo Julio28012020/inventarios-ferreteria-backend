@@ -26,6 +26,10 @@ public class ProductService {
         return productRepository.findByStatusNot(ProductStatus.DISCONTINUED);
     }
 
+    public List<Product> findActiveProducts() {
+        return productRepository.findByStatus(ProductStatus.ACTIVE);
+    }
+
     public Product findById(Long id) {
         return productRepository
                 .findByIdAndStatusNot(id, ProductStatus.DISCONTINUED)
