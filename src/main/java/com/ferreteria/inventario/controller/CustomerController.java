@@ -45,8 +45,7 @@ public class CustomerController {
 
         return new ResponseEntity<>(
                 customerService.saveFromDto(dto),
-                HttpStatus.CREATED
-        );
+                HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
@@ -55,15 +54,22 @@ public class CustomerController {
             @RequestBody CustomerRequestDto dto) {
 
         return ResponseEntity.ok(
-                customerService.updateFromDto(id, dto)
-        );
+                customerService.updateFromDto(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
 
-        customerService.delete(id);
+        try {
+            customerService.delete(id);
 
-        return ResponseEntity.noContent().build();
+            return ResponseEntity.noContent().build();
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(e.getMessage());
+        }
     }
 }

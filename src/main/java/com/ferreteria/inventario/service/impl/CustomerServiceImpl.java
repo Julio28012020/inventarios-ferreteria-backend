@@ -9,20 +9,24 @@ import com.ferreteria.inventario.dto.request.CustomerRequestDto;
 import com.ferreteria.inventario.entity.Customer;
 import com.ferreteria.inventario.mapper.CustomerMapper;
 import com.ferreteria.inventario.repository.CustomerRepository;
+import com.ferreteria.inventario.repository.SaleRepository;
 import com.ferreteria.inventario.service.CustomerService;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
-
     private final CustomerMapper customerMapper;
+    private final SaleRepository saleRepository;
 
     public CustomerServiceImpl(
             CustomerRepository customerRepository,
-            CustomerMapper customerMapper) {
+            CustomerMapper customerMapper,
+            SaleRepository saleRepository) {
+
         this.customerRepository = customerRepository;
         this.customerMapper = customerMapper;
+        this.saleRepository = saleRepository;
     }
 
     @Override
@@ -73,6 +77,11 @@ public class CustomerServiceImpl implements CustomerService {
         if (!customerRepository.existsById(id)) {
             throw new RuntimeException(
                     "No se puede eliminar, el cliente no existe.");
+        }
+
+        if (saleRepository.existsByCustomerId(id)) {
+            throw new RuntimeException(
+                    "No se puede eliminar el cliente porque tiene compras asociadas.");
         }
 
         customerRepository.deleteById(id);
